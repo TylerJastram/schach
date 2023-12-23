@@ -39,7 +39,8 @@
             <v-row v-for="i in 8">
               <span v-for="j in ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']" class="ma-0 mp-0">
 
-                <Feld :pieces="pieces" :coordinate="j + (9 - i)"></Feld>
+                <Feld :pieces="pieces" :coordinate="j + (9 - i)" @clicked="toggleSelection"
+                  :selected="selection.includes(j + (9 - i))"></Feld>
 
               </span>
             </v-row>
@@ -57,7 +58,7 @@ import { ref, defineEmits } from 'vue'
 const level = ref(0)
 const emit = defineEmits(['titleUpdate'])
 const pieces = ref({
-  
+
   //White pieces:
   "A1": "R",
   "B1": "N",
@@ -75,8 +76,8 @@ const pieces = ref({
   "F2": "P",
   "G2": "P",
   "H2": "P",
-  
-//black pieces:
+
+  //black pieces:
   "A8": "r",
   "B8": "n",
   "C8": "b",
@@ -93,8 +94,9 @@ const pieces = ref({
   "F7": "p",
   "G7": "p",
   "H7": "p",
-  
+
 })
+const selection = ref([])
 setLevel(0)
 function setLevel(newLevel) {
   if (newLevel == 0) {
@@ -103,6 +105,14 @@ function setLevel(newLevel) {
     emit('titleUpdate', "Level " + newLevel)
   }
   level.value = newLevel
+}
+function toggleSelection(coordinate) {
+  console.log("Schach" + coordinate)
+  if (selection.value.includes(coordinate)) {
+    selection.value = selection.value.filter(e => e !== coordinate);
+  } else {
+    selection.value.push(coordinate)
+  }
 }
 
 

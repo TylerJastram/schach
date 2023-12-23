@@ -1,8 +1,10 @@
 <template>
-  <v-sheet fill-height fluid class="d-flex ma-0 mp-0" :color="themeColor" width="50" height="50" block>
+  <v-sheet fill-height fluid class="d-flex ma-0 pa-0" :color="themeColor" width="50" height="50" block>
     <v-row justify="center">
       <v-col>
-        <v-img :src="pieceCharacter"></v-img>
+        <div :class="{ highlight: selected }" class="pa-0" @click="fieldClicked">
+          <v-img :src="pieceCharacter" ></v-img>
+        </div>
       </v-col>
     </v-row>
 
@@ -19,8 +21,10 @@ import { onMounted } from 'vue';
 
 const props = defineProps({
   pieces: Object,
-  coordinate: String
+  coordinate: String,
+  selected: Boolean
 })
+const emit = defineEmits(['clicked'])
 
 const themeColor = ref("red")
 const pieceCharacter = ref("a")
@@ -34,11 +38,14 @@ onMounted(() => {
   if ((row + col) % 2 === 1) themeColor.value = "#E9EDCC"; else themeColor.value = "#779954"
 
 })
+function fieldClicked() {
+  console.log(props.coordinate)
+  emit("clicked", props.coordinate)
+}
 function updateField() {
-  console.log(Object.keys(props.pieces))
   if (Object.keys(props.pieces).indexOf(props.coordinate) > -1) {
     pieceCharacter.value = getPiece(props.pieces[props.coordinate])
-  } else { pieceCharacter.value = "" }
+  } else { pieceCharacter.value = getPiece("blank") }
 }
 function getPiece(piece) {
 
@@ -58,7 +65,8 @@ function getPiece(piece) {
   if (piece === 'n') return "./blackpieces/n.png"
   if (piece === 'r') return "./blackpieces/r.png"
 
-  return piece
+
+  return "./blank.png"
 }
 </script>
 
@@ -71,5 +79,9 @@ function getPiece(piece) {
 
 .coordinate {
   position: absolute;
+}
+
+.highlight {
+  background-color: rgba(255, 0, 0, 0.26);
 }
 </style>
