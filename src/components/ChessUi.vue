@@ -53,6 +53,8 @@
 </template>
 
 <script setup>
+// here we are importing the chess engine or somtheing
+import { moves } from 'js-chess-engine'
 import Feld from './Feld.vue';
 import { ref, defineEmits } from 'vue'
 const level = ref(0)
@@ -107,14 +109,29 @@ function setLevel(newLevel) {
   level.value = newLevel
 }
 function toggleSelection(coordinate) {
-  console.log("Schach" + coordinate)
+
+
   if (selection.value.includes(coordinate)) {
     selection.value = selection.value.filter(e => e !== coordinate);
   } else {
+    selection.value = []
     selection.value.push(coordinate)
+    const possibleMoves = getPossibleMoves(coordinate)
+    console.log(possibleMoves)
+    Array.prototype.push.apply(selection.value,possibleMoves); 
   }
 }
-
+function getPossibleMoves(coordinate) {
+  //find piece and find out whos turn it is
+  const piece = pieces.value[coordinate]
+  console.log(piece)
+  if (piece === undefined)
+    return []
+  const color = piece === piece.toUpperCase() ? "white" : "black"
+  const m = moves({ "turn": color, "pieces": pieces.value })
+  console.log(m)
+  return m[coordinate] ? m[coordinate] : []
+}
 
 </script>
 
