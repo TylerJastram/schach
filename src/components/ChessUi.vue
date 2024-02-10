@@ -28,11 +28,13 @@
 
 
       <h1>level {{ level }}</h1>
-      <v-btn @click="setLevel(0)">Back</v-btn>
-
+      <v-btn @click="setLevel(0); humanColor = undefined">Back</v-btn>
       <br>
-
-      <v-container class="d-flex  flex-column align-center">
+      <div v-if="humanColor === undefined">
+        <v-btn @click="humanColor = 'white'" class="mr-5" size="x-large">White</v-btn>
+        <v-btn @click="humanColor = 'black'" color="black" size="x-large">Black</v-btn>
+      </div>
+      <v-container v-if="humanColor" class="d-flex  flex-column align-center">
         <v-responsive aspect-ratio="1">
 
           <v-col class="justify-center">
@@ -54,12 +56,13 @@
 
 <script setup>
 // here we are importing the chess engine or somtheing
-import { moves } from 'js-chess-engine'
+import { moves, aiMove } from 'js-chess-engine'
 import Feld from './Feld.vue';
 import { ref, defineEmits } from 'vue'
 const level = ref(0)
 const emit = defineEmits(['titleUpdate'])
 const pieces = ref({
+
 
   //White pieces:
   "A1": "R",
@@ -99,6 +102,8 @@ const pieces = ref({
 
 })
 const selection = ref([])
+const activeSquare = ref(undefined)
+const humanColor = ref(undefined)
 setLevel(0)
 function setLevel(newLevel) {
   if (newLevel == 0) {
@@ -112,13 +117,29 @@ function toggleSelection(coordinate) {
 
 
   if (selection.value.includes(coordinate)) {
-    selection.value = selection.value.filter(e => e !== coordinate);
+    if (coordinate === activeSquare.value) {
+      selection.value = []
+      activeSquare.value = undefined
+    }
+    else {
+      const currentPiece = pieces.value[activeSquare.value]
+      delete pieces.value[activeSquare.value]
+      pieces.value[coordinate] = currentPiece
+      selection.value = []
+      activeSquare.value = undefined
+      pcMove()
+    }
   } else {
     selection.value = []
+    const currentPiece = pieces.value[coordinate]
+    if (currentPiece === undefined) return
+    const pieceColor = (currentPiece === currentPiece.toUpperCase()) ? "white" : "black"
+    if (humanColor.value !== pieceColor) return
+    activeSquare.value = coordinate
     selection.value.push(coordinate)
     const possibleMoves = getPossibleMoves(coordinate)
     console.log(possibleMoves)
-    Array.prototype.push.apply(selection.value,possibleMoves); 
+    Array.prototype.push.apply(selection.value, possibleMoves);
   }
 }
 function getPossibleMoves(coordinate) {
@@ -132,7 +153,16 @@ function getPossibleMoves(coordinate) {
   console.log(m)
   return m[coordinate] ? m[coordinate] : []
 }
-
+function pcMove() {
+  const aiColor = humanColor.value === "white" ? "black" : "white"
+  const m = aiMove({ "turn": aiColor, "pieces": pieces.value }, level.value)
+  console.log(m)
+  const from = Object.keys(m)[0]
+  const to = m[from]
+  const piece = pieces.value[from]
+  delete pieces.value[from]
+  pieces.value[to] = piece
+}
 </script>
 
 <style scoped>
