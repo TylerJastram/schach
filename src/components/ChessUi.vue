@@ -137,25 +137,24 @@ function toggleSelection(coordinate) {
     activeSquare.value = coordinate
     selection.value.push(coordinate)
     const possibleMoves = getPossibleMoves(coordinate)
-    console.log(possibleMoves)
     Array.prototype.push.apply(selection.value, possibleMoves);
   }
 }
 function getPossibleMoves(coordinate) {
   //find piece and find out whos turn it is
   const piece = pieces.value[coordinate]
-  console.log(piece)
+
   if (piece === undefined)
     return []
   const color = piece === piece.toUpperCase() ? "white" : "black"
   const m = moves({ "turn": color, "pieces": pieces.value })
-  console.log(m)
+
   return m[coordinate] ? m[coordinate] : []
 }
 function pcMove() {
   const aiColor = humanColor.value === "white" ? "black" : "white"
   const m = aiMove({ "turn": aiColor, "pieces": pieces.value }, level.value)
-  console.log(m)
+
   const keys = Object.keys(m)
   for (let i = 0; i < keys.length; i++) {
 
@@ -164,9 +163,6 @@ function pcMove() {
     const to = m[from]
     const newBoard = move({ "turn": aiColor, "pieces": pieces.value }, from, to)
     pieces.value = newBoard.pieces
-    //const piece = pieces.value[from]
-    //delete pieces.value[from]
-    //pieces.value[to] = piece
   }
 }
 </script>
