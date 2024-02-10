@@ -56,7 +56,7 @@
 
 <script setup>
 // here we are importing the chess engine or somtheing
-import { moves, aiMove } from 'js-chess-engine'
+import { moves, move, aiMove } from 'js-chess-engine'
 import Feld from './Feld.vue';
 import { ref, defineEmits } from 'vue'
 const level = ref(0)
@@ -122,9 +122,8 @@ function toggleSelection(coordinate) {
       activeSquare.value = undefined
     }
     else {
-      const currentPiece = pieces.value[activeSquare.value]
-      delete pieces.value[activeSquare.value]
-      pieces.value[coordinate] = currentPiece
+      const newBoard = move({ "turn": humanColor.value, "pieces": pieces.value }, activeSquare.value, coordinate)
+      pieces.value = newBoard.pieces
       selection.value = []
       activeSquare.value = undefined
       pcMove()
@@ -157,11 +156,18 @@ function pcMove() {
   const aiColor = humanColor.value === "white" ? "black" : "white"
   const m = aiMove({ "turn": aiColor, "pieces": pieces.value }, level.value)
   console.log(m)
-  const from = Object.keys(m)[0]
-  const to = m[from]
-  const piece = pieces.value[from]
-  delete pieces.value[from]
-  pieces.value[to] = piece
+  const keys = Object.keys(m)
+  for (let i = 0; i < keys.length; i++) {
+
+    const from = keys[i]
+
+    const to = m[from]
+    const newBoard = move({ "turn": aiColor, "pieces": pieces.value }, from, to)
+    pieces.value = newBoard.pieces
+    //const piece = pieces.value[from]
+    //delete pieces.value[from]
+    //pieces.value[to] = piece
+  }
 }
 </script>
 
