@@ -41,7 +41,7 @@
             <v-row v-for="i in 8">
               <span v-for="j in ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']" class="ma-0 mp-0">
 
-                <Feld :pieces="pieces" :coordinate="j + (9 - i)" @clicked="toggleSelection"
+                <Feld :pieces="configuration.pieces" :coordinate="j + (9 - i)" @clicked="toggleSelection"
                   :selected="selection.includes(j + (9 - i))"></Feld>
 
               </span>
@@ -56,51 +56,15 @@
 
 <script setup>
 // here we are importing the chess engine or somtheing
-import { moves, move, aiMove } from 'js-chess-engine'
+import { moves, move, aiMove, Game } from 'js-chess-engine'
 import Feld from './Feld.vue';
 import { ref, defineEmits } from 'vue'
 const level = ref(0)
 const emit = defineEmits(['titleUpdate'])
-const pieces = ref({
+const configuration = ref({ pieces: {} })
+const game = new Game()
+configuration.value = game.exportJson()
 
-
-  //White pieces:
-  "A1": "R",
-  "B1": "N",
-  "C1": "B",
-  "D1": "Q",
-  "E1": "K",
-  "F1": "B",
-  "G1": "N",
-  "H1": "R",
-  "A2": "P",
-  "B2": "P",
-  "C2": "P",
-  "D2": "P",
-  "E2": "P",
-  "F2": "P",
-  "G2": "P",
-  "H2": "P",
-
-  //black pieces:
-  "A8": "r",
-  "B8": "n",
-  "C8": "b",
-  "D8": "q",
-  "E8": "k",
-  "F8": "b",
-  "G8": "n",
-  "H8": "r",
-  "A7": "p",
-  "B7": "p",
-  "C7": "p",
-  "D7": "p",
-  "E7": "p",
-  "F7": "p",
-  "G7": "p",
-  "H7": "p",
-
-})
 const selection = ref([])
 const activeSquare = ref(undefined)
 const humanColor = ref(undefined)
@@ -122,15 +86,16 @@ function toggleSelection(coordinate) {
       activeSquare.value = undefined
     }
     else {
-      const newBoard = move({ "turn": humanColor.value, "pieces": pieces.value }, activeSquare.value, coordinate)
-      pieces.value = newBoard.pieces
+      configuration.value.turn = humanColor.value
+      const newBoard = move(configuration.value, activeSquare.value, coordinate)
+      configuration.value = newBoard
       selection.value = []
       activeSquare.value = undefined
       pcMove()
     }
   } else {
     selection.value = []
-    const currentPiece = pieces.value[coordinate]
+    const currentPiece = configuration.value.pieces[coordinate]
     if (currentPiece === undefined) return
     const pieceColor = (currentPiece === currentPiece.toUpperCase()) ? "white" : "black"
     if (humanColor.value !== pieceColor) return
@@ -142,18 +107,20 @@ function toggleSelection(coordinate) {
 }
 function getPossibleMoves(coordinate) {
   //find piece and find out whos turn it is
-  const piece = pieces.value[coordinate]
+  const piece = configuration.value.pieces[coordinate]
 
   if (piece === undefined)
     return []
   const color = piece === piece.toUpperCase() ? "white" : "black"
-  const m = moves({ "turn": color, "pieces": pieces.value })
+  configuration.value.turn = color
+  const m = moves(configuration)
 
   return m[coordinate] ? m[coordinate] : []
 }
 function pcMove() {
   const aiColor = humanColor.value === "white" ? "black" : "white"
-  const m = aiMove({ "turn": aiColor, "pieces": pieces.value }, level.value)
+  configuration.value.turn = aiColor
+  const m = aiMove(configuration, level.value)
 
   const keys = Object.keys(m)
   for (let i = 0; i < keys.length; i++) {
@@ -161,8 +128,8 @@ function pcMove() {
     const from = keys[i]
 
     const to = m[from]
-    const newBoard = move({ "turn": aiColor, "pieces": pieces.value }, from, to)
-    pieces.value = newBoard.pieces
+    const newBoard = move(configuration, from, to)
+    configuration.value = newBoard
   }
 }
 </script>
